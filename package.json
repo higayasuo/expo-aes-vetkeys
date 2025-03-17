@@ -1,0 +1,58 @@
+{
+  "name": "expo-aes-vetkeys",
+  "version": "0.1.0",
+  "description": "Hooks and components for using AES & vetkeys in Expo Web/Native applications",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . --ext .ts,.tsx",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "expo",
+    "aes",
+    "vetkeys",
+    "react",
+    "react-native"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "base64-js": "^1.5.1",
+    "expo-crypto-universal": "^0.1.0",
+    "expo-storage-universal": "^0.1.0",
+    "vetkeys-client-utils": "^0.1.1"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-native": "^0.76.7",
+    "@dfinity/agent": "^0.20.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-native": "^0.72.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0",
+    "vitest": "^1.0.0"
+  }
+}
