@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { initAesKeyInternal } from './initAesKeyInternal';
 import { Identity } from '@dfinity/agent';
-import { TransportSecretKey } from 'vetkeys-client-utils';
-import { platformCrypto } from 'expo-crypto-universal';
-import { generateAesRawKey } from '../storage/aesRawKeyUtils';
+import { CryptoModule } from 'expo-crypto-universal';
+import { Storage, Uint8ArrayValueStorageWrapper } from 'expo-storage-universal';
+import { prepareAesKey } from './prepareAesKey';
+import { decryptAesKey } from './decryptAesKey';
+import { encryptAesKey } from './encryptAesKey';
+import { saveEncryptedAesKeyToBackend } from './saveEncryptedAesKeyToBackend';
 
 export type AsymmetricKeysResult = {
   publicKey: Uint8Array;
@@ -20,13 +22,26 @@ export interface AesBackend {
 }
 
 type UseAesKeyArgs = {
+  cryptoModule: CryptoModule;
+  storage: Storage;
   identity: Identity | undefined;
   backend: AesBackend;
+  aesRawKeyName: string;
 };
 
-export const useAesKey = ({ identity, backend }: UseAesKeyArgs) => {
+export const useAesKey = ({
+  cryptoModule,
+  storage,
+  identity,
+  backend,
+  aesRawKeyName = 'aesRawKey',
+}: UseAesKeyArgs) => {
   const [isProcessingAes, setIsProcessingAes] = useState(false);
   const aesErrorRef = useRef<unknown | undefined>(undefined);
+  const aesRawKeyStorage = new Uint8ArrayValueStorageWrapper(
+    storage,
+    aesRawKeyName,
+  );
 
   const initAesKey = useCallback(async () => {
     try {
@@ -34,41 +49,52 @@ export const useAesKey = ({ identity, backend }: UseAesKeyArgs) => {
       setIsProcessingAes(true);
 
       if (!identity) {
-        console.log('Generating AES key');
-        await generateAesRawKey();
+        console.log('Generating an AES key');
+        const aesRawKey = cryptoModule.getRandomBytes(32);
+
+        console.log('Saving locally an AES key');
+        await aesRawKeyStorage.save(aesRawKey);
         return;
       }
 
-      const tskSeed = platformCrypto.getRandomBytes(32);
-      const tsk = new TransportSecretKey(tskSeed);
       const principal = identity.getPrincipal().toUint8Array();
-      console.log('Getting asymmetric keys');
-      const asymmetricKeysStartTime = performance.now();
-      const { publicKey, encryptedAesKey, encryptedKey } =
-        await backend.asymmetricKeys(tsk.public_key());
-      console.log(
-        `Getting asymmetric keys took: ${
-          performance.now() - asymmetricKeysStartTime
-        }ms`,
-      );
+      const tskSeed = cryptoModule.getRandomBytes(32);
+      const { tsk, publicKey, encryptedAesKey, encryptedKey } =
+        await prepareAesKey({
+          backend,
+          tskSeed,
+        });
 
-      const newEncryptedAesKey = await initAesKeyInternal({
-        publicKey,
-        encryptedAesKey,
-        encryptedKey,
-        principal,
-        tsk,
-      });
+      if (encryptedAesKey && encryptedKey) {
+        const aesRawKey = await decryptAesKey({
+          encryptedAesKey,
+          principal,
+          encryptedKey,
+          publicKey,
+          tsk,
+        });
 
-      if (newEncryptedAesKey) {
-        console.log('Saving AES key to backend');
-        const saveEncryptedAesKeyStartTime = performance.now();
-        await backend.asymmetricSaveEncryptedAesKey(newEncryptedAesKey);
-        console.log(
-          `Saving AES key to backend took: ${
-            performance.now() - saveEncryptedAesKeyStartTime
-          }ms`,
-        );
+        console.log('Saving locally existing AES key');
+        await aesRawKeyStorage.save(aesRawKey);
+        return;
+      } else {
+        console.log('Generating an AES key');
+        const aesRawKey = cryptoModule.getRandomBytes(32);
+
+        console.log('Saving locally an AES key');
+        await aesRawKeyStorage.save(aesRawKey);
+
+        const encryptedAesKey = await encryptAesKey({
+          aesRawKey,
+          principal,
+          publicKey,
+          seed: tskSeed,
+        });
+
+        await saveEncryptedAesKeyToBackend({
+          encryptedAesKey,
+          backend,
+        });
       }
     } catch (err) {
       console.error('Failed to initialize AES key:', err);
