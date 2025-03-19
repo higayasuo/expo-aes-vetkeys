@@ -1,5 +1,5 @@
 import { TransportSecretKey } from 'vetkeys-client-utils';
-import { AesBackend } from './useAesKey';
+import { AesBackend } from '../types';
 import { asymmetricKeys } from './asymmetricKeys';
 
 type PrepareAesKeyArgs = {

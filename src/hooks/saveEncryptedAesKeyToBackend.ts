@@ -1,4 +1,4 @@
-import { AesBackend } from './useAesKey';
+import { AesBackend } from '../types';
 
 /**
  * Arguments for the saveEncryptedAesKeyToBackend function.

@@ -1,47 +1,46 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Identity } from '@dfinity/agent';
 import { CryptoModule } from 'expo-crypto-universal';
-import { Storage, Uint8ArrayValueStorageWrapper } from 'expo-storage-universal';
+import { Uint8ArrayValueStorageWrapper } from 'expo-storage-universal';
 import { prepareAesKey } from './prepareAesKey';
 import { decryptAesKey } from './decryptAesKey';
 import { encryptAesKey } from './encryptAesKey';
 import { saveEncryptedAesKeyToBackend } from './saveEncryptedAesKeyToBackend';
+import { AesBackend } from '../types';
 
-export type AsymmetricKeysResult = {
-  publicKey: Uint8Array;
-  encryptedAesKey: Uint8Array | undefined;
-  encryptedKey: Uint8Array | undefined;
-};
-
-export interface AesBackend {
-  asymmetricKeys: (
-    transportPublicKey: Uint8Array,
-  ) => Promise<AsymmetricKeysResult>;
-
-  asymmetricSaveEncryptedAesKey: (encryptedAesKey: Uint8Array) => Promise<void>;
-}
-
+/**
+ * Arguments required for the useAesKey hook
+ */
 type UseAesKeyArgs = {
+  /** The crypto module for cryptographic operations */
   cryptoModule: CryptoModule;
-  storage: Storage;
+  /** Storage wrapper for AES key persistence */
+  aesRawKeyStorage: Uint8ArrayValueStorageWrapper;
+  /** The user's identity, if authenticated */
   identity: Identity | undefined;
+  /** The backend service for key operations */
   backend: AesBackend;
-  aesRawKeyName?: string;
 };
 
+/**
+ * Hook for managing AES key generation, encryption, and storage
+ *
+ * This hook handles the lifecycle of AES keys:
+ * 1. Generates new AES keys when no identity is present
+ * 2. Retrieves and decrypts existing AES keys when an identity is present
+ * 3. Encrypts and saves new AES keys when needed
+ *
+ * @param args - The arguments required for AES key management
+ * @returns Object containing processing state and any errors
+ */
 export const useAesKey = ({
   cryptoModule,
-  storage,
+  aesRawKeyStorage,
   identity,
   backend,
-  aesRawKeyName = 'aesRawKey',
 }: UseAesKeyArgs) => {
   const [isProcessingAes, setIsProcessingAes] = useState(false);
   const aesErrorRef = useRef<unknown | undefined>(undefined);
-  const aesRawKeyStorage = new Uint8ArrayValueStorageWrapper(
-    storage,
-    aesRawKeyName,
-  );
 
   const initAesKey = useCallback(async () => {
     try {

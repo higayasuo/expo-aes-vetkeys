@@ -1,4 +1,4 @@
-import { AesBackend, AsymmetricKeysResult } from './useAesKey';
+import { AesBackend, AsymmetricKeysResult } from '../types';
 
 /**
  * Arguments for the asymmetricKeys function.
