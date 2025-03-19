@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
+    "@types/react": "^18.3.18",
     "jsdom": "^26.0.0",
     "typescript": "^5.8.2",
     "vite": "^6.2.1",
