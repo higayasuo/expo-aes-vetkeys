@@ -26,7 +26,7 @@ type UseAesKeyArgs = {
   storage: Storage;
   identity: Identity | undefined;
   backend: AesBackend;
-  aesRawKeyName: string;
+  aesRawKeyName?: string;
 };
 
 export const useAesKey = ({
