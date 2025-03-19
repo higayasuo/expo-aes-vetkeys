@@ -15,8 +15,6 @@ export default defineConfig({
         'react',
         'react-native',
         '@dfinity/agent',
-        'expo-crypto-universal',
-        'expo-storage-universal',
         'vetkeys-client-utils',
       ],
     },
