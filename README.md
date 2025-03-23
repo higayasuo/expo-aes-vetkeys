@@ -30,6 +30,9 @@ npx expo install expo-secure-store
 
 # For crypto functionality
 npx expo install expo-crypto
+
+# For vetkeys functionality
+npm install vetkeys-client-utils
 ```
 
 ## Usage
@@ -188,7 +191,6 @@ A specialized storage wrapper for AES raw keys.
 - `@dfinity/agent`: ^0.20.0
 - `expo-crypto-universal`: ^0.1.0
 - `expo-storage-universal`: ^0.1.0
-- `vetkeys-client-utils`: ^0.1.1
 - `react`: ^18.3.1
 - `react-native`: ^0.76.7
 
@@ -202,6 +204,10 @@ A specialized storage wrapper for AES raw keys.
 #### Crypto
 
 - `expo-crypto`
+
+#### Vetkeys
+
+- `vetkeys-client-utils`: ^0.1.1
 
 ## License
 
